@@ -5,6 +5,9 @@ Converting the Congressional Record to a topic model, and then creating regressi
 This code takes the congressional record as presented by Gentzkow, et al. (2018) and does my own preprocessing, and filtering, ultimately leading to a topic model which I use as my dependent variable.
 
 
+It is likely that this code needs a bit of tweaking to get to run correctly, as I have not edited it much after using it. However, I intend to come back tyo this in the future to make it more accessible for future use.
+
+
 Data Sources needed: 
 
 Congressional Record for the 43rd-114th Congresses: Parsed Speeches and Phrase Counts:
