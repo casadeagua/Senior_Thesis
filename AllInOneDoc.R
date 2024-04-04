@@ -79,6 +79,7 @@ for (i in 1:length(filelist)) {
     data_0 <- rbind(data_0, x)
 }
 descr_data <- data_0
+
 # creating metadata combined
 descr_data <- descr_data %>%
     select(!c(
@@ -204,13 +205,6 @@ rm(list = c("trimmed_dfm", "master_list", "speech_dfm", "valid_bigrams", "speech
 all_bigrams <- dfm_sort(all_bigrams, decreasing = TRUE, "both")
 write_rds(all_bigrams, file = "all_bigrams.rds")
 
-## odds of not being selected in sample
-v <- 688000:(688000 * 0.30)
-w <- v - 5 ## assuming 5 total speeches
-x <- w / v
-y <- prod(x)
-y
-
 ## Create Subsample & convert to keyatm
 ## ------------------------------------
 # sample_indexes <- sample(1:nrow(all_bigrams), 0.7*nrow(all_bigrams))
@@ -236,8 +230,6 @@ keyval <- values_fig(key_viz) # occurances of each keyword
 keyval
 # write.csv(keyval, file = "topbigrams.csv")
 
-## OTHER MODEL USES 0.008 AS CUTOFF AND RANKING LESS THAN 8
-
 # keyval <- read_csv("topbigrams.csv")
 print("all done!")
 filt_values <- keyval %>%
@@ -248,15 +240,13 @@ filt_values <- keyval %>%
 filt_values$Topic <- gsub("*[^a-zA-Z]", "", filt_values$Topic)
 topic_keywords <- split(filt_values$Word, filt_values$Topic)
 topic_keywords <- subset(topic_keywords, sapply(topic_keywords, length) > 1)
-# write_rds(less_values, file = "less_values.RData")
-str(topic_keywords)
+
 rm(list = c(
     "sub_set", "filt_values", "key_viz", "keyval", "topic_phrases",
     "upon_tabl", "reconsid_laid", "offic_build", "tem"
 ))
 
 write_rds(topic_keywords, file = "topic_keywords.rds")
-
 print("all done pt.2!")
 
 ### RUNNING THE MODEL ------------------------------------------------------
@@ -310,31 +300,22 @@ small_together_model <- function(save_location,
 seed <- floor(runif(1, min = 0, max = 1000001))
 print(paste("Running with Seed: ", seed))
 
-small_together_model(
-    save_location = "D:/Data/ModifiedFiles/keyATM_model_maxtops_1/",
-    keyword_v = topic_keywords,
-    nloops = 1,
-    seed_m = 150296,
-    n_iteration = 1 ## should be ~ 40 mins per loop
-)
-
-## model 4 seed: 113469
 ## model 6 seed: 150296
-
 model_1 <- small_together_model(
     save_location = "D:/Data/ModifiedFiles/keyATM_model_maxtops_1/",
     nloops = 13,
     keyword_v = topic_keywords,
     seed_m = 150296,
-    n_iteration = 75, ## should be ~ 40 mins per loop
+    n_iteration = 75, 
 )
 
+
+### After Model 
 model_1 <- read_rds(file = "D:/Data/ModifiedFiles/keyATM_model_maxtops_1/model.rds")
-model_2 <- read_rds(file = "D:/Data/ModifiedFiles/keyATM_model_maxtops_2/model.rds")
-setwd("D:/Data/DataStorage")
 
-
+## Validating Results ----------------------------------------------------------------------------------
 ## extract random sample of documents documents into file "speeches_i.txt"
+setwd("D:/Data/DataStorage")
 setwd(datastorage_dir)
 
 meta_speeches <- vroom::vroom(file = "allspeeches.txt")
@@ -356,10 +337,8 @@ for (top in topics) {
     writeLines(speeches, paste0("./topic_documents/speeches_", top, ".txt"))
 }
 
-### Campaign Finance Data  ----------------------------------------------------------------------------------
-parent_directory <- "D:/Data/DataStorage/Campaign Finance"
-parent_directory_pac <- parent_directory
-subdirectories <- list.dirs(parent_directory_pac, recursive = FALSE)
+### Loading Campaign Finance Data  ----------------------------------------------------------------------------------
+parent_directory_pac <- "./Campaign_Finance" ## where the 1994-2014 cycle tables have been placed
 
 search_files <- function(directory, pattern) {
     files <- list.files(directory, recursive = TRUE, full.names = TRUE)
@@ -408,99 +387,11 @@ setwd(datastorage_dir)
 write_delim(full_data, file = "all_donations.txt", delim = "|")
 pac_data <- read_delim(file = "all_donations.txt", delim = "|")
 
-## 5_crime picked up perscription drugs / pharma !!
-## 12 picked up the Postal Service
-## 13 is half about Gov Spending, Half about other finance & interest rates
-## 26 -- FDA/cosmetics, transport, Homeland sec, Energy -- maybe about finishing bills?
-
-
-# sum(pred_dat_1$environment == pred_dat_2$environment) / nrow(pred_dat_1)
-# ## about 60% classified the same
-# sum(pred_dat_1$energy == pred_dat_2$energy) / nrow(pred_dat_1)
-# ## 0.72% the same
-# sum(pred_dat_1$health == pred_dat_2$health) / nrow(pred_dat_1)
-# ## 0.57% the same
-# sum(pred_dat_1$religion == pred_dat_2$religion) / nrow(pred_dat_1)
-# ## 0.48% the same
-# sum(pred_dat_1$finance == pred_dat_2$finance) / nrow(pred_dat_1)
-# ## 0.74% the same
-
-
-## TODO: prepping _tmdat ----------------------------------------------------------------------------------
+## Prepping DATA for Data_Analysis ----------------------------------------------------------------------------------
 # library(lmtest)
 setwd(datastorage_dir)
 speaker_maps <- vroom::vroom(file = "allspeeches.txt", delim = "|") ## actually metadata
 speaker_maps <- select(speaker_maps, !speech)
-
-### return here after new model fitting ---------
-newmd <- read_rds("newestmod.rds")
-subdat <- newmd %>%
-    mutate(
-        doc_id = testdocs,
-        topic_mode = mod_ss
-    ) %>%
-    select(c("doc_id", "topic_mode"))
-
-subdat <- left_join(
-    subdat,
-    speaker_maps,
-    by = join_by("doc_id" == "speech_id")
-)
-
-subdat <- mutate(subdat,
-    fullname = paste(lastname, firstname, sep = " "),
-    date = ymd(date)
-)
-rm(list = c("speaker_maps"))
-
-alltops <- unique(subdat$topic_mode) %>%
-    gtools::mixedsort(alltops, decreasing = FALSE)
-allvar <- list()
-for (i in 1:length(alltops)) {
-    var <- ifelse(alltops[i] == subdat$topic_mode, 1, 0)
-    allvar <- c(allvar, list(var))
-}
-onehot_tops <- do.call(cbind, allvar)
-colnames(onehot_tops) <- alltops
-colnames(onehot_tops) <- gsub("[[:punct:][:digit:]]", "", colnames(onehot_tops))
-onehot_topics <- as_tibble(onehot_tops)
-alltops <- names(onehot_topics)
-onehot_topics$doc_id <- as.numeric(subdat$doc_id)
-
-subdat <- left_join(subdat, onehot_topics)
-
-quarterly_metadata <- subdat %>%
-    mutate(
-        quarter = quarter(date, type = "year.quarter")
-    )
-topsums <- quarterly_metadata %>%
-    group_by(fullname, quarter) %>%
-    summarise_at(vars(any_of(alltops)), sum, na.rm = TRUE)
-q_data <- quarterly_metadata %>%
-    group_by(fullname, quarter) %>%
-    summarise(
-        party = first(party),
-        chamber = first(chamber),
-        state = first(state),
-        district = first(district),
-        gender = first(gender),
-        word_count = sum(word_count)
-    )
-preds_withmeta_byquart <- left_join(q_data, topsums, relationship = "one-to-many")
-
-rm(list = c(
-    "quarterly_metadata", "quart_conts_bysector",
-    "pacdata_quarter", "subdat", "topsums",
-    "q_data", "onehot_topics", "allvar",
-    "doc_id"
-))
-
-setwd(datastorage_dir)
-write_delim(preds_withmeta_byquart, file = "subsampledata_NEW_1.txt", delim = "|")
-# write_delim(preds_withmeta_byquart, file = "subsampledata.txt", delim = "|")
-# write_delim(preds_withmeta_byquart, file = "metadata_withpreds_matched.txt", delim = "|")
-
-write_delim(as.data.frame(alltops), file = "topiclist_newmod.txt", delim = "|")
 
 ## pacdata by quarter ------------------------------------------------------------------
 pac_data <- vroom::vroom(file = "all_donations.txt", delim = "|")
@@ -607,56 +498,80 @@ new_match <- left_join(max_values, tops, join_by(value == ind), relationship = "
 new_match$speech_id <- as.integer(rownames(test_dfm))
 test_preds <- left_join(new_match, speaker_maps)
 
-## comparing new model to old models
-testdocs <- test_preds$speech_id
-dat_1 <- subdat_1[subdat_1$doc_id %in% testdocs, ]
-dat_2 <- subdat_2[subdat_2$doc_id %in% testdocs, ]
 
-sum(test_preds$tops == dat_1$topic_mode)
-sum(test_preds$tops == dat_2$topic_mode)
+### return here after new model fitting ---------
+newmd <- read_rds("newestmod.rds")
+subdat <- newmd %>%
+    mutate(
+        doc_id = testdocs,
+        topic_mode = mod_ss
+    ) %>%
+    select(c("doc_id", "topic_mode"))
 
-newmd <- tibble(
-    testdocs,
-    mod_ss = test_preds$tops
-    # ,
-    # mod1_match = test_preds$tops == dat_1$topic_mode,
-    # mod2_match = test_preds$tops == dat_2$topic_mode,
+subdat <- left_join(
+    subdat,
+    speaker_maps,
+    by = join_by("doc_id" == "speech_id")
 )
 
-newmd <- newmd %>%
-    mutate(allmatch = (mod1_match + mod2_match) == 2)
-sum(newmd$allmatch)
+subdat <- mutate(subdat,
+    fullname = paste(lastname, firstname, sep = " "),
+    date = ymd(date)
+)
+rm(list = c("speaker_maps"))
 
-write_rds(newmd, "newestmod.rds")
+alltops <- unique(subdat$topic_mode) %>%
+    gtools::mixedsort(alltops, decreasing = FALSE)
+allvar <- list()
+for (i in 1:length(alltops)) {
+    var <- ifelse(alltops[i] == subdat$topic_mode, 1, 0)
+    allvar <- c(allvar, list(var))
+}
+onehot_tops <- do.call(cbind, allvar)
+colnames(onehot_tops) <- alltops
+colnames(onehot_tops) <- gsub("[[:punct:][:digit:]]", "", colnames(onehot_tops))
+onehot_topics <- as_tibble(onehot_tops)
+alltops <- names(onehot_topics)
+onehot_topics$doc_id <- as.numeric(subdat$doc_id)
 
-# ## ZERO-INFLATED MODELS--------------------------------
-# # linear relationship
-# # homoscedasticity
-# # normality QQ plots for normality
-# # NUMBER SPEECHES HAS TO BE LOGGED
-# install.packages("pscl")
-# library(pscl)
-# set.seed(123)
-# n <- 1000
-# x1 <- rnorm(n)
-# x2 <- rnorm(n)
-# # Generating count data with excess zeros
-# y <- rpois(n, lambda = exp(x1 + x2))
-# # Introducing excess zeros
-# y[sample(n, size = n / 3)] <- 0
-# x1[sample(n, size = n / 3)] <- 0
-# x2[sample(n, size = n / 3)] <- 0
-# # Creating a data frame
-# data <- data.frame(y = y, x1 = x1, x2 = x2)
+subdat <- left_join(subdat, onehot_topics)
 
-# # Fitting zero-inflated model
-# zip_model <- zeroinfl(y ~ x1 + x2 | x1 + x2, dist = "poisson", data = data)
-# summary(zip_model)
+quarterly_metadata <- subdat %>%
+    mutate(
+        quarter = quarter(date, type = "year.quarter")
+    )
+topsums <- quarterly_metadata %>%
+    group_by(fullname, quarter) %>%
+    summarise_at(vars(any_of(alltops)), sum, na.rm = TRUE)
+q_data <- quarterly_metadata %>%
+    group_by(fullname, quarter) %>%
+    summarise(
+        party = first(party),
+        chamber = first(chamber),
+        state = first(state),
+        district = first(district),
+        gender = first(gender),
+        word_count = sum(word_count)
+    )
+preds_withmeta_byquart <- left_join(q_data, topsums, relationship = "one-to-many")
+
+rm(list = c(
+    "quarterly_metadata", "quart_conts_bysector",
+    "pacdata_quarter", "subdat", "topsums",
+    "q_data", "onehot_topics", "allvar",
+    "doc_id"
+))
+
+setwd(datastorage_dir)
+write_delim(preds_withmeta_byquart, file = "subsampledata_NEW_1.txt", delim = "|")
+# write_delim(preds_withmeta_byquart, file = "subsampledata.txt", delim = "|")
+# write_delim(preds_withmeta_byquart, file = "metadata_withpreds_matched.txt", delim = "|")
+
+write_delim(as.data.frame(alltops), file = "topiclist_newmod.txt", delim = "|")
 
 
-## Evaluating topic models
 
-
+### Evaluating topic models
 ### generating different k-values models  ------------------------------------------------------
 small_together_model <- function(save_location,
                                  seed_m,
@@ -848,9 +763,9 @@ names(metrics)
 metrics <- read_rds(file = "model_rankings.rds")
 
 ## find rankings
-coherence_rank <- rank(-metrics$coherence_mean, ties.method = "first") ## WANTS HIGHER VALUES
-coherence_rank_test <- rank(-metrics$coherence_mean_test, ties.method = "first") ## WANTS HIGHER VALUES
-exclusivity_rank <- rank(metrics$exclusivity_mean, ties.method = "first") ### THIS WANTS LOWER VALUES!!
+coherence_rank <- rank(-metrics$coherence_mean, ties.method = "first")              ## WANTS HIGHER VALUES
+coherence_rank_test <- rank(-metrics$coherence_mean_test, ties.method = "first")    ## WANTS HIGHER VALUES
+exclusivity_rank <- rank(metrics$exclusivity_mean, ties.method = "first")           ##  WANTS LOWER VALUES
 
 metrics$coherence_rank <- coherence_rank
 metrics$exclusivity_rank <- exclusivity_rank
@@ -890,7 +805,6 @@ for (i in 2:66) {
 end_time <- Sys.time()
 
 start_time - end_time
-
 
 ## best models: (ON TRAINING SET)
 ## 50 iterations 1, 1
