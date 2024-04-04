@@ -1,3 +1,7 @@
+## This file creates all the dataframes and topic models needed to run the "Data_Analysis_Current.R" file
+## It may be wise to not source this file, as memory will likley become a concern.
+
+
 # All In One Doc
 library(tidyverse)
 library(quanteda)
