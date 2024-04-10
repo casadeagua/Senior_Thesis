@@ -1,4 +1,4 @@
-# Senior_Thesis_Replication
+# Senior Thesis Replication
 Data processing and statistical analysis code for Senior Thesis.
 
 
