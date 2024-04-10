@@ -1,11 +1,11 @@
 # Senior_Thesis_Replication
-Converting the Congressional Record to a topic model, and then creating regressions and tables from that data for analysis. 
+Data processing and statistical analysis code for Senior Thesis.
 
 
-This code takes the congressional record as presented by Gentzkow, et al. (2018) and does my own preprocessing, and filtering, ultimately leading to a topic model which I use as my dependent variable.
+This code takes the congressional record as presented by Gentzkow, et al. (2018) and does my own preprocessing, and filtering, ultimately leading to a topic model which I use to formulate my dependent variable.
 
 
-It is likely that this code needs a bit of tweaking to get to run correctly, as I have not edited it much after using it. However, I intend to come back to this in the future to make it more accessible.
+It is likely that this code is will need a bit of tweaking to get to run correctly on a different device, as I have not edited it much after its use. However, I intend to soon edit this to be more accessible.
 
 
 Data Sources needed: 
