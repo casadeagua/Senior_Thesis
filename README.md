@@ -7,7 +7,7 @@ This code takes the congressional record as presented by Gentzkow, et al. (2018)
 
 It is likely that this code is will need a bit of tweaking to get to run correctly on a different device, as I have not edited it much after its use. However, I intend to soon edit this to be more accessible.
 
-
+ 
 Data Sources needed: 
 
 Congressional Record for the 43rd-114th Congresses: Parsed Speeches and Phrase Counts:
