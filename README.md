@@ -1,11 +1,11 @@
 # Senior Thesis Replication
 
 
-**The Full Thesis Paper is Listed under the file "Thesis_Final_Post.pdf"**
+***The Full Thesis Paper is Listed under the file "Thesis_Final_Post.pdf"***
 
 
 
-##Data processing and statistical analysis code for Senior Thesis.
+- Data processing and statistical analysis code for Senior Thesis.
 
 
 This code takes the congressional record as presented by Gentzkow, et al. (2018) and does my own preprocessing, and filtering, ultimately leading to a topic model which I use to formulate my dependent variable.
