@@ -1,17 +1,16 @@
-# My Final Thesis Paper is Listed under the file "Thesis_Final_Post.pdf"
-## If you wish to explore the code, below is a brief overview.
-
 # Senior Thesis Replication
+*The Full Thesis Paper is Listed under the file "Thesis_Final_Post.pdf"*
+
 Data processing and statistical analysis code for Senior Thesis.
 
 
 This code takes the congressional record as presented by Gentzkow, et al. (2018) and does my own preprocessing, and filtering, ultimately leading to a topic model which I use to formulate my dependent variable.
 
 
-It is likely that this code is will need a bit of tweaking to get to run correctly on a different device, as this was all designed for only my personal use. However, I intend to soon edit this to be more accessible.
+It is likely that this code is will need a bit of tweaking to get to run correctly on a different device, as this was all designed for only my personal use. However, I intend to periodically edit this to be more accessible.
 
  
-Data Sources needed: 
+*Data Sources needed:*
 
 Congressional Record for the 43rd-114th Congresses: Parsed Speeches and Phrase Counts:
 "hein-daily.zip"
@@ -29,4 +28,4 @@ https://www.comparativeagendas.net/datasets_codebooks
 
 ## Contact Me:
 
-If you have any questions about my paper or findings, please feel free to contact me at: amwaterhouse@ucsd.edu and I would be happy to discuss anything regarding the paper
+If you have any questions about my paper or findings, please feel free to contact me at: *amwaterhouse@ucsd.edu* and I would be happy to discuss anything regarding the paper, methodology, or related subjects
